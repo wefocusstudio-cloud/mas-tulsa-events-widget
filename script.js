@@ -4,6 +4,8 @@ const DEFAULT_LANGUAGE = "es";
 const SUPPORTED_LANGUAGES = ["es", "ca", "en", "fr"];
 const EVENT_IMAGE_DIRECTORY = "/images/events/";
 const EVENT_IMAGE_EXTENSION = ".jpg";
+const MAS_TULSA_LOCATION_LABEL = "Mas Tulsà · Palol de Revardit, Girona";
+const GOOGLE_MAPS_SEARCH_URL = "https://www.google.com/maps/search/?api=1&query=";
 
 const TRANSLATIONS = {
   es: {
@@ -448,7 +450,9 @@ function createEventCard(event, index) {
   card.querySelector("[data-event-category]").textContent = event.category || "";
   card.querySelector("[data-event-title]").textContent = title;
   card.querySelector("[data-event-date]").textContent = formatEventDateTime(event);
-  card.querySelector("[data-event-description]").textContent = event.description || "";
+  card.querySelector("[data-event-description]").textContent = cleanEventDescription(
+    event.description
+  );
 
   renderEventImage({ image, media, imagePath, title });
   renderLocation(card, event.location);
@@ -482,7 +486,33 @@ function renderLocation(card, location) {
   }
 
   card.querySelector("[data-location-label]").textContent = copy.location;
-  card.querySelector("[data-event-location]").textContent = location;
+  const locationLink = card.querySelector("[data-event-location]");
+  locationLink.textContent = getLocationLabel(location);
+  locationLink.href = createGoogleMapsUrl(location);
+}
+
+function cleanEventDescription(description) {
+  if (!hasValue(description)) return "";
+  return String(description)
+    .trim()
+    .replace(/(?:^|\r?\n)[ \t]*---[ \t]*$/, "")
+    .trim();
+}
+
+function isMasTulsaLocation(location) {
+  return String(location)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .includes("mas tulsa");
+}
+
+function getLocationLabel(location) {
+  return isMasTulsaLocation(location) ? MAS_TULSA_LOCATION_LABEL : location;
+}
+
+function createGoogleMapsUrl(location) {
+  return `${GOOGLE_MAPS_SEARCH_URL}${encodeURIComponent(location)}`;
 }
 
 function renderMetadata(card, metadata) {

@@ -216,6 +216,10 @@ function parseMetadata(description) {
   const contentLines = [];
 
   description.split(/\r?\n/).forEach((line) => {
+    if (/^\s*---\s*$/.test(line)) {
+      return;
+    }
+
     const match = line.match(/^\s*([a-zA-ZÀ-ÿ_-]+)\s*[:=]\s*(.+?)\s*$/);
 
     if (!match) {
