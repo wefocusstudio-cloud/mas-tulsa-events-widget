@@ -7,6 +7,9 @@
     "dev": "netlify dev",
     "check": "node --check netlify/functions/events.js && node --check script.js"
   },
+  "dependencies": {
+    "google-auth-library": "^9.15.1"
+  },
   "engines": {
     "node": ">=18"
   }

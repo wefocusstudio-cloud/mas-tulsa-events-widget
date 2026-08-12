@@ -2,7 +2,7 @@
 
 Widget web professional per mostrar l'agenda d'activitats de Mas Tulsa a partir d'un calendari especific de Google Calendar. El projecte esta preparat per desplegar-se a Netlify i incrustar-se posteriorment a Wix Studio mitjancant un iframe.
 
-Els esdeveniments es gestionen des de Google Calendar. El frontend no conte secrets i sempre consulta una Netlify Function, que es l'unica part encarregada de parlar amb la Google Calendar API.
+Els esdeveniments es gestionen des de Google Calendar. El calendari pot continuar sent privat: el frontend no conte secrets i sempre consulta una Netlify Function, que es l'unica part encarregada de parlar amb la Google Calendar API mitjancant un Service Account.
 
 ## Estructura
 
@@ -24,7 +24,7 @@ Els esdeveniments es gestionen des de Google Calendar. El frontend no conte secr
 1. Dani i Xenia creen, editen o eliminen activitats al calendari de Google Calendar.
 2. El widget carrega `/api/events`.
 3. Netlify redirigeix aquesta ruta a `/.netlify/functions/events`.
-4. La funcio consulta la Google Calendar API amb la clau guardada a Netlify.
+4. La funcio consulta la Google Calendar API amb un Service Account guardat a Netlify.
 5. La funcio retorna un JSON net i ordenat cronologicament.
 6. `script.js` renderitza una interfície minima amb estats de carrega, buit i error.
 
@@ -55,13 +55,13 @@ Si no s'indica `end`, es consulten els propers 90 dies. El rang maxim admès es 
 Crea un fitxer `.env` local a partir de `.env.example` o configura aquestes variables al panell de Netlify:
 
 ```text
-GOOGLE_CALENDAR_API_KEY=
+GOOGLE_SERVICE_ACCOUNT_JSON=
 GOOGLE_CALENDAR_ID=
 ```
 
-`GOOGLE_CALENDAR_API_KEY` es obligatoria. `GOOGLE_CALENDAR_ID` es opcional perquè el calendari de Mas Tulsa ja esta configurat per defecte dins la funcio.
+`GOOGLE_SERVICE_ACCOUNT_JSON` es obligatoria i ha de contenir el JSON complet del Service Account. `GOOGLE_CALENDAR_ID` es opcional perquè el calendari de Mas Tulsa ja esta configurat per defecte dins la funcio.
 
-No escriguis claus reals al repositori. `.gitignore` exclou `.env` i variants locals.
+No escriguis el JSON real ni cap `private_key` al repositori. `.gitignore` exclou `.env` i variants locals.
 
 ## Configuracio local
 
@@ -69,7 +69,7 @@ Requisits:
 
 - Node.js 18 o superior.
 - Netlify CLI instal·lat globalment o disponible via `npx`.
-- Una API key de Google Calendar amb acces al calendari indicat.
+- El JSON d'un Service Account compartit amb el calendari indicat amb permis de veure tots els detalls dels esdeveniments.
 
 Per provar-ho localment:
 
@@ -77,7 +77,7 @@ Per provar-ho localment:
 cp .env.example .env
 ```
 
-Omple `GOOGLE_CALENDAR_API_KEY` al fitxer `.env` i executa:
+Omple `GOOGLE_SERVICE_ACCOUNT_JSON` al fitxer `.env` amb el JSON complet del Service Account i executa:
 
 ```bash
 npx netlify dev
@@ -147,7 +147,7 @@ Aquestes dades ja es retornen al JSON, encara que la primera interfície nomes m
 ## Desplegament a Netlify
 
 1. Connecta el repositori a Netlify.
-2. Defineix `GOOGLE_CALENDAR_API_KEY` a Site configuration > Environment variables.
+2. Defineix `GOOGLE_SERVICE_ACCOUNT_JSON` a Site configuration > Environment variables amb el JSON complet del Service Account.
 3. Opcionalment defineix `GOOGLE_CALENDAR_ID` si algun dia cal canviar el calendari sense tocar codi.
 4. Publica el site. `netlify.toml` ja defineix `publish = "."` i `functions = "netlify/functions"`.
 5. Incrusta la URL publica de Netlify dins Wix Studio amb un iframe.

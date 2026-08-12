@@ -1,6 +1,9 @@
+const { JWT } = require("google-auth-library");
+
 const DEFAULT_CALENDAR_ID =
   "50cc82acbe3cd97d12d3a1968ed61b223a64e72731d15e8f517eeb9e913059da@group.calendar.google.com";
 const TIME_ZONE = "Europe/Madrid";
+const CALENDAR_READONLY_SCOPE = "https://www.googleapis.com/auth/calendar.readonly";
 const DEFAULT_RANGE_DAYS = 90;
 const MAX_RANGE_DAYS = 370;
 const MAX_RESULTS = 100;
@@ -14,18 +17,11 @@ exports.handler = async (event) => {
     return response(405, { error: "Method not allowed" });
   }
 
-  const apiKey = process.env.GOOGLE_CALENDAR_API_KEY;
-
-  if (!apiKey) {
-    return response(500, {
-      error: "Falta configurar la variable GOOGLE_CALENDAR_API_KEY."
-    });
-  }
-
   try {
     const range = getDateRange(event.queryStringParameters || {});
     const calendarId = process.env.GOOGLE_CALENDAR_ID || DEFAULT_CALENDAR_ID;
-    const googleEvents = await fetchCalendarEvents({ apiKey, calendarId, range });
+    const authClient = getGoogleAuthClient();
+    const googleEvents = await fetchCalendarEvents({ authClient, calendarId, range });
 
     return response(200, {
       events: googleEvents.map(normalizeEvent)
@@ -40,13 +36,48 @@ exports.handler = async (event) => {
   }
 };
 
-async function fetchCalendarEvents({ apiKey, calendarId, range }) {
+function getGoogleAuthClient() {
+  const serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+
+  if (!serviceAccountJson) {
+    const error = new Error("Missing GOOGLE_SERVICE_ACCOUNT_JSON");
+    error.statusCode = 500;
+    error.publicMessage = "Falta configurar la variable GOOGLE_SERVICE_ACCOUNT_JSON.";
+    throw error;
+  }
+
+  let serviceAccount;
+
+  try {
+    serviceAccount = JSON.parse(serviceAccountJson);
+  } catch (parseError) {
+    const error = new Error(`Invalid GOOGLE_SERVICE_ACCOUNT_JSON: ${parseError.message}`);
+    error.statusCode = 500;
+    error.publicMessage = "La variable GOOGLE_SERVICE_ACCOUNT_JSON no és un JSON vàlid.";
+    throw error;
+  }
+
+  if (!serviceAccount.client_email || !serviceAccount.private_key) {
+    const error = new Error("Service account JSON missing client_email or private_key");
+    error.statusCode = 500;
+    error.publicMessage =
+      "La variable GOOGLE_SERVICE_ACCOUNT_JSON no conté client_email o private_key.";
+    throw error;
+  }
+
+  return new JWT({
+    email: serviceAccount.client_email,
+    key: serviceAccount.private_key.replace(/\\n/g, "\n"),
+    scopes: [CALENDAR_READONLY_SCOPE]
+  });
+}
+
+async function fetchCalendarEvents({ authClient, calendarId, range }) {
   const url = new URL(
     `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events`
   );
 
   url.search = new URLSearchParams({
-    key: apiKey,
     singleEvents: "true",
     orderBy: "startTime",
     timeMin: range.start.toISOString(),
@@ -55,7 +86,21 @@ async function fetchCalendarEvents({ apiKey, calendarId, range }) {
     maxResults: String(MAX_RESULTS)
   }).toString();
 
-  const googleResponse = await fetch(url);
+  const { token } = await authClient.getAccessToken();
+
+  if (!token) {
+    const error = new Error("Could not obtain Google access token");
+    error.statusCode = 500;
+    error.publicMessage = "No s'ha pogut autenticar amb Google Calendar.";
+    throw error;
+  }
+
+  const googleResponse = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json"
+    }
+  });
   const payload = await googleResponse.json().catch(() => ({}));
 
   if (!googleResponse.ok) {
