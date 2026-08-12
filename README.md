@@ -26,7 +26,30 @@ Els esdeveniments es gestionen des de Google Calendar. El calendari pot continua
 3. Netlify redirigeix aquesta ruta a `/.netlify/functions/events`.
 4. La funcio consulta la Google Calendar API amb un Service Account guardat a Netlify.
 5. La funcio retorna un JSON net i ordenat cronologicament.
-6. `script.js` renderitza una interfície minima amb estats de carrega, buit i error.
+6. `script.js` renderitza el calendari mensual, les activitats i els estats de carrega, buit i error.
+
+El frontend consulta exclusivament el mes visible. En canviar de mes envia un nou rang `start` / `end`, actualitza la quadrícula i manté totes les activitats del mes ordenades cronològicament.
+
+## Interfície i idiomes
+
+La primera versió visible està en castellà. També estan preparats català, anglès i francès mitjançant el paràmetre `lang`:
+
+```text
+/?lang=es
+/?lang=ca
+/?lang=en
+/?lang=fr
+```
+
+Tots els textos d'interfície es centralitzen a l'objecte `TRANSLATIONS` de `script.js`. Els títols, descripcions i altres dades editorials dels esdeveniments es mostren tal com arriben de Google Calendar.
+
+La imatge de cada activitat es resol a partir del seu identificador:
+
+```text
+taller-pa → /images/events/taller-pa.jpg
+```
+
+Per afegir una fotografia nova només cal desar el fitxer JPG corresponent a `/images/events/` i utilitzar el nom del fitxer, sense extensió, al camp `imatge` de l'esdeveniment. Si el fitxer no existeix, la card manté la proporció amb un fallback neutre.
 
 ## Google Calendar
 
@@ -142,7 +165,7 @@ imatge=taller-pa
 boto=Reserva
 ```
 
-Aquestes dades ja es retornen al JSON, encara que la primera interfície nomes mostra la informacio basica de comprovacio.
+La interfície omet automàticament qualsevol camp buit i mostra les dades disponibles a la card de cada activitat.
 
 ## Desplegament a Netlify
 

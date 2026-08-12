@@ -1,38 +1,122 @@
 <!doctype html>
-<html lang="ca">
+<html lang="es">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Agenda d'activitats de Mas Tulsa." />
-    <title>Activitats | Mas Tulsa</title>
+    <meta name="description" content="" data-meta-description />
+    <title>Mas Tulsà</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&amp;family=Marcellus&amp;display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
-    <main class="widget" aria-labelledby="events-title">
-      <header class="widget__header">
-        <p class="widget__eyebrow">Mas Tulsa</p>
-        <h1 id="events-title">Agenda d'activitats</h1>
-        <p class="widget__date" data-today></p>
-      </header>
+    <main class="agenda" aria-labelledby="agenda-title">
+      <div class="agenda__layout">
+        <section class="calendar-panel" aria-labelledby="calendar-month">
+          <header class="calendar-header">
+            <div class="calendar-header__today">
+              <span class="calendar-header__today-label" data-today-label></span>
+              <strong class="calendar-header__today-number" data-today-number></strong>
+            </div>
 
-      <section class="events" aria-live="polite" aria-busy="true">
-        <div class="state state--loading" data-state="loading">
-          <span class="loader" aria-hidden="true"></span>
-          <p>Carregant activitats...</p>
-        </div>
+            <div class="calendar-header__period">
+              <p class="calendar-header__eyebrow" data-calendar-eyebrow></p>
+              <h1 id="calendar-month" class="calendar-header__month" data-calendar-month></h1>
+              <p class="calendar-header__year" data-calendar-year></p>
+            </div>
 
-        <div class="state state--empty" data-state="empty" hidden>
-          <p>No hi ha activitats programades.</p>
-        </div>
+            <nav class="calendar-nav" data-calendar-nav>
+              <button class="calendar-nav__button" type="button" data-previous-month>
+                <span aria-hidden="true">←</span>
+              </button>
+              <button class="calendar-nav__button" type="button" data-next-month>
+                <span aria-hidden="true">→</span>
+              </button>
+            </nav>
+          </header>
 
-        <div class="state state--error" data-state="error" hidden>
-          <p>S'ha produït un error en carregar les activitats.</p>
-          <small data-error-message></small>
-        </div>
+          <div class="calendar" data-calendar>
+            <div class="calendar__weekdays" data-weekdays aria-hidden="true"></div>
+            <div class="calendar__grid" data-calendar-grid></div>
+          </div>
 
-        <div class="events__list" data-events-list hidden></div>
-      </section>
+          <footer class="calendar-legend" data-calendar-legend>
+            <span class="calendar-legend__marker" aria-hidden="true"></span>
+            <span data-legend-text></span>
+          </footer>
+        </section>
+
+        <section class="activities" aria-labelledby="agenda-title" aria-live="polite">
+          <header class="activities__header">
+            <p class="activities__eyebrow" data-activities-eyebrow></p>
+            <h2 id="agenda-title" class="activities__title" data-activities-title></h2>
+            <p class="activities__summary" data-activities-summary></p>
+          </header>
+
+          <div class="activities__body" data-activities-body aria-busy="true">
+            <div class="status status--loading" data-state="loading">
+              <span class="status__line" aria-hidden="true"></span>
+              <p data-loading-text></p>
+            </div>
+
+            <div class="status" data-state="empty" hidden>
+              <p class="status__title" data-empty-title></p>
+              <p class="status__copy" data-empty-copy></p>
+            </div>
+
+            <div class="status" data-state="error" hidden>
+              <p class="status__title" data-error-title></p>
+              <p class="status__copy" data-error-copy></p>
+              <button class="text-button" type="button" data-retry></button>
+            </div>
+
+            <div class="activities__list" data-events-list hidden></div>
+          </div>
+        </section>
+      </div>
     </main>
+
+    <template id="event-card-template">
+      <article class="event-card">
+        <figure class="event-card__media">
+          <img class="event-card__image" alt="" loading="lazy" />
+          <div class="event-card__fallback" aria-hidden="true"></div>
+        </figure>
+
+        <div class="event-card__content">
+          <p class="event-card__category" data-event-category></p>
+          <h3 class="event-card__title" data-event-title></h3>
+          <p class="event-card__date" data-event-date></p>
+
+          <p class="event-card__description" data-event-description></p>
+
+          <div class="event-card__location" data-event-location-row>
+            <span class="event-card__location-label" data-location-label></span>
+            <span data-event-location></span>
+          </div>
+
+          <dl class="event-card__metadata" data-event-metadata></dl>
+
+          <button class="event-card__cta" type="button" data-event-cta>
+            <span data-event-cta-label></span>
+            <span aria-hidden="true">→</span>
+          </button>
+
+          <span class="visually-hidden" data-selected-message></span>
+        </div>
+      </article>
+    </template>
+
+    <template id="metadata-item-template">
+      <div class="event-card__meta-item">
+        <dt></dt>
+        <dd></dd>
+      </div>
+    </template>
 
     <script src="/script.js" defer></script>
   </body>
