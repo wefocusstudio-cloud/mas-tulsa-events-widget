@@ -1,0 +1,13 @@
+{
+  "name": "mas-tulsa-events-widget",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Widget web vanilla para mostrar activitats de Mas Tulsa des de Google Calendar.",
+  "scripts": {
+    "dev": "netlify dev",
+    "check": "node --check netlify/functions/events.js && node --check script.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
