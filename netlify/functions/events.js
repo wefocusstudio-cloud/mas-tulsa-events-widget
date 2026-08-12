@@ -29,6 +29,14 @@ exports.handler = async (event) => {
   } catch (error) {
     const statusCode = error.statusCode || 500;
 
+    console.error("Calendar events function error", {
+      name: error.name,
+      message: error.message,
+      statusCode: error.statusCode,
+      code: error.code,
+      stack: error.stack
+    });
+
     return response(statusCode, {
       error: error.publicMessage || "No s'han pogut carregar les activitats.",
       details: process.env.NODE_ENV === "development" ? error.message : undefined
