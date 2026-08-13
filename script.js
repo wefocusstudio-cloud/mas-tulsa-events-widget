@@ -42,7 +42,7 @@ const TRANSLATIONS = {
     places: "Plazas",
     price: "Precio",
     imageAlt: "{title}, actividad de Mas Tulsà",
-    defaultCta: "Reservar",
+    defaultCta: "Reserva ahora",
     eventSelected: "Actividades destacadas para {date}"
   },
   ca: {
@@ -52,7 +52,7 @@ const TRANSLATIONS = {
     today: "Avui",
     calendarEyebrow: "Calendari",
     activitiesEyebrow: "Mas Tulsà · Agenda",
-    activitiesTitle: "Activitats · {month}",
+    activitiesTitle: "Activitats d'{month}",
     activityCount: {
       zero: "Sense activitats",
       one: "1 activitat",
@@ -79,7 +79,7 @@ const TRANSLATIONS = {
     places: "Places",
     price: "Preu",
     imageAlt: "{title}, activitat de Mas Tulsà",
-    defaultCta: "Reservar",
+    defaultCta: "Reserva ara",
     eventSelected: "Activitats destacades per al {date}"
   },
   en: {
@@ -563,7 +563,7 @@ function renderCallToAction(card, buttonLabel) {
     return;
   }
 
-  button.querySelector("[data-event-cta-label]").textContent = buttonLabel || copy.defaultCta;
+  button.querySelector("[data-event-cta-label]").textContent = copy.defaultCta;
 }
 
 function highlightSelectedEvents() {
