@@ -15,6 +15,8 @@ Els esdeveniments es gestionen des de Google Calendar. El calendari pot continua
 ├── package.json
 ├── .env.example
 ├── /netlify/functions/events.js
+├── /netlify/functions/sync-events.js
+├── /netlify/functions/lib/
 ├── /images/events/
 └── /assets/
 ```
@@ -94,9 +96,13 @@ Crea un fitxer `.env` local a partir de `.env.example` o configura aquestes vari
 ```text
 GOOGLE_SERVICE_ACCOUNT_JSON=
 GOOGLE_CALENDAR_ID=
+GOOGLE_SPREADSHEET_ID=
+SYNC_EVENTS_TOKEN=
 ```
 
 `GOOGLE_SERVICE_ACCOUNT_JSON` es obligatoria i ha de contenir el JSON complet del Service Account. `GOOGLE_CALENDAR_ID` es opcional perquè el calendari de Mas Tulsa ja esta configurat per defecte dins la funcio.
+
+`GOOGLE_SPREADSHEET_ID` és opcional i per defecte apunta al full definitiu `Agenda Web - Inscripcions i Reserves`. `SYNC_EVENTS_TOKEN` és obligatori per executar manualment la sincronització: no s'ha d'exposar al navegador ni compartir-lo amb usuaris finals.
 
 No escriguis el JSON real ni cap `private_key` al repositori. `.gitignore` exclou `.env` i variants locals.
 
@@ -177,9 +183,25 @@ places=10
 durada=3 hores
 imatge=taller-pa
 boto=Reserva
+marge=3
 ```
 
 La interfície omet automàticament qualsevol camp buit i mostra les dades disponibles a la card de cada activitat.
+
+`marge`, `margen` i `margin` són sinònims internament normalitzats com `margin`. Només se sincronitzen al full `EVENTS` els esdeveniments que tinguin un `places` enter positiu i un `boto`/`button` no buit. Si no s'indica marge, la funció llegeix `MARGE_EXTRA_PREDETERMINAT` de `CONFIG`.
+
+## Sincronització manual de reserves
+
+La lectura pública de `/api/events` no escriu mai al full. La sincronització és una Netlify Function separada, només `POST`, protegida amb `SYNC_EVENTS_TOKEN`:
+
+```bash
+curl -X POST "http://localhost:8888/.netlify/functions/sync-events" \
+  -H "Authorization: Bearer $SYNC_EVENTS_TOKEN"
+```
+
+En producció, usa la mateixa ruta amb el token guardat com a variable d'entorn de Netlify. La funció obté un token de Google amb el mateix Service Account, mantenint Calendar en mode `calendar.readonly` i afegint únicament l'abast `spreadsheets` per llegir/escriure el full privat.
+
+Cada execució actualitza o crea files d'`EVENTS` per `Event ID`, compta únicament les files `PARTICIPANTS` amb `Estat=CONFIRMADA` i no elimina mai files històriques o esdeveniments que ja no siguin reservables. No hi ha cap planificació automàtica en aquesta fase.
 
 ## Desplegament a Netlify
 

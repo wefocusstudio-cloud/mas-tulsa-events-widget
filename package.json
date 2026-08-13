@@ -5,7 +5,8 @@
   "description": "Widget web vanilla para mostrar activitats de Mas Tulsa des de Google Calendar.",
   "scripts": {
     "dev": "netlify dev",
-    "check": "node --check netlify/functions/events.js && node --check script.js"
+    "check": "node --check netlify/functions/events.js && node --check netlify/functions/sync-events.js && node --check netlify/functions/lib/google.js && node --check netlify/functions/lib/calendar.js && node --check netlify/functions/lib/event-metadata.js && node --check netlify/functions/lib/sync-utils.js && node --check script.js",
+    "test": "node --test test/**/*.test.js"
   },
   "dependencies": {
     "google-auth-library": "^9.15.1"
