@@ -1,7 +1,7 @@
 const API_ENDPOINT = "/api/events";
 const TIME_ZONE = "Europe/Madrid";
-const DEFAULT_LANGUAGE = "es";
-const SUPPORTED_LANGUAGES = ["es", "ca", "en", "fr"];
+const DEFAULT_LANGUAGE = "ca";
+const SUPPORTED_LANGUAGES = ["ca", "es", "en", "fr"];
 const EVENT_IMAGE_DIRECTORY = "/images/events/";
 const EVENT_IMAGE_EXTENSION = ".jpg";
 const MAS_TULSA_LOCATION_LABEL = "Mas Tulsà · Palol de Revardit, Girona";
@@ -158,8 +158,9 @@ const TRANSLATIONS = {
   }
 };
 
-const language = getLanguage();
-const copy = TRANSLATIONS[language];
+let activeLanguage = getLanguageFromUrl();
+let copy = TRANSLATIONS[activeLanguage];
+let hasSentReadyMessage = false;
 const todayParts = getTodayParts();
 
 const state = {
@@ -206,22 +207,38 @@ const elements = {
 document.addEventListener("DOMContentLoaded", init);
 
 function init() {
-  renderInterfaceCopy();
-  renderWeekdays();
+  applyLanguage(activeLanguage);
   bindInteractions();
-  renderCalendar();
   loadMonthEvents();
+  signalAgendaReady();
 }
 
-function getLanguage() {
+function getLanguageFromUrl() {
   const requestedLanguage = new URLSearchParams(window.location.search).get("lang");
-  return SUPPORTED_LANGUAGES.includes(requestedLanguage)
-    ? requestedLanguage
-    : DEFAULT_LANGUAGE;
+  return normalizeLanguage(requestedLanguage);
+}
+
+function normalizeLanguage(language) {
+  return SUPPORTED_LANGUAGES.includes(language) ? language : DEFAULT_LANGUAGE;
+}
+
+function applyLanguage(language) {
+  activeLanguage = normalizeLanguage(language);
+  copy = TRANSLATIONS[activeLanguage];
+  renderInterfaceCopy();
+  renderWeekdays();
+  renderCalendar();
+  renderEvents();
+}
+
+function signalAgendaReady() {
+  if (hasSentReadyMessage) return;
+  hasSentReadyMessage = true;
+  window.parent.postMessage({ type: "masTulsaAgendaReady" }, "*");
 }
 
 function renderInterfaceCopy() {
-  document.documentElement.lang = language;
+  document.documentElement.lang = activeLanguage;
   document.title = copy.documentTitle;
   elements.metaDescription.content = copy.metaDescription;
   elements.todayLabel.textContent = copy.today;
@@ -709,3 +726,10 @@ function interpolate(template, values) {
     return result.replaceAll(`{${key}}`, String(value));
   }, template);
 }
+
+window.addEventListener("message", (event) => {
+  const message = event.data;
+  if (!message || typeof message !== "object" || message.type !== "setLanguage") return;
+  if (!SUPPORTED_LANGUAGES.includes(message.language)) return;
+  applyLanguage(message.language);
+});

@@ -32,16 +32,30 @@ El frontend consulta exclusivament el mes visible. En canviar de mes envia un no
 
 ## Interfície i idiomes
 
-La primera versió visible està en castellà. També estan preparats català, anglès i francès mitjançant el paràmetre `lang`:
+La interfície està preparada en català, castellà, anglès i francès mitjançant el paràmetre `lang`. El català és l'idioma predeterminat quan el paràmetre falta o no és vàlid:
 
 ```text
-/?lang=es
 /?lang=ca
+/?lang=es
 /?lang=en
 /?lang=fr
 ```
 
 Tots els textos d'interfície es centralitzen a l'objecte `TRANSLATIONS` de `script.js`. Els títols, descripcions i altres dades editorials dels esdeveniments es mostren tal com arriben de Google Calendar.
+
+Quan el widget està incrustat a Wix, accepta canvis d'idioma sense recarregar ni tornar a consultar Google Calendar:
+
+```js
+iframe.contentWindow.postMessage(
+  {
+    type: "setLanguage",
+    language: "fr"
+  },
+  "*"
+);
+```
+
+En acabar la inicialització, el widget envia una vegada `{ type: "masTulsaAgendaReady" }` a la pàgina pare perquè Wix pugui respondre amb l'idioma actiu.
 
 La imatge de cada activitat es resol a partir del seu identificador:
 
